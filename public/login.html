@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoporteIA - Iniciar Sesión</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 420px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+    .auth-logo {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .auth-card h2 {
+      font-size: 1.4rem;
+      margin-bottom: 25px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: var(--transition-smooth);
+    }
+    .auth-tab-btn.active {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      text-align: left;
+    }
+    .auth-form label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .auth-form input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: rgba(30, 41, 59, 0.3);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+    .auth-form input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+    }
+    .auth-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      margin-top: 10px;
+    }
+    .auth-btn:hover {
+      background: var(--color-primary-hover);
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="auth-logo">SoporteIA</div>
+    <h2 id="authTitle">Iniciar Sesión</h2>
+    
+    <div class="auth-tabs">
+      <button id="tabLogin" class="auth-tab-btn active" onclick="switchTab('login')">Ingresar</button>
+      <button id="tabRegister" class="auth-tab-btn" onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <form id="authForm" onsubmit="handleAuth(event)" class="auth-form">
+      <div>
+        <label for="emailInput">Correo Electrónico</label>
+        <input type="email" id="emailInput" placeholder="correo@ejemplo.com" required>
+      </div>
+      <div>
+        <label for="passwordInput">Contraseña</label>
+        <input type="password" id="passwordInput" placeholder="••••••••" required>
+      </div>
+      <button type="submit" id="submitBtn" class="auth-btn">Ingresar al Sistema</button>
+      <button type="button" onclick="window.location.href='../../soporteia-maqueta.html'" class="auth-btn" style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); color: var(--text-secondary); margin-top: 12px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.color='var(--text-secondary)';">
+        Volver a la Maqueta
+      </button>
+    </form>
+  </div>
+
+  <script>
+    let activeTab = 'login';
+
+    function switchTab(tab) {
+      activeTab = tab;
+      const title = document.getElementById('authTitle');
+      const submitBtn = document.getElementById('submitBtn');
+      const tabLogin = document.getElementById('tabLogin');
+      const tabRegister = document.getElementById('tabRegister');
+      
+      tabLogin.classList.remove('active');
+      tabRegister.classList.remove('active');
+
+      if (tab === 'login') {
+        tabLogin.classList.add('active');
+        title.innerText = 'Iniciar Sesión';
+        submitBtn.innerText = 'Ingresar al Sistema';
+      } else {
+        tabRegister.classList.add('active');
+        title.innerText = 'Crear Nueva Cuenta';
+        submitBtn.innerText = 'Registrarse y Comenzar';
+      }
+    }
+
+    function handleAuth(event) {
+      event.preventDefault();
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+
+      if (!email || !password) return;
+
+      // Fetch simulated database
+      const users = JSON.parse(localStorage.getItem('users_db') || '[]');
+
+      if (activeTab === 'login') {
+        // Find user
+        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!user || user.password !== password) {
+          alert('Credenciales incorrectas. Intenta nuevamente.');
+          return;
+        }
+
+        // Save session
+        localStorage.setItem('current_user', user.email);
+        
+        // Redirect to dashboard
+        window.location.replace('index.html');
+      } else {
+        // Register user
+        const exists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
+        if (exists) {
+          alert('Este correo ya se encuentra registrado.');
+          return;
+        }
+
+        // Add user
+        const newUser = {
+          email: email,
+          password: password,
+          sub_docs: false,
+          sub_diag: false,
+          sub_premium: false,
+          first_purchase_done: false
+        };
+        users.push(newUser);
+        localStorage.setItem('users_db', JSON.stringify(users));
+
+        // Save session
+        localStorage.setItem('current_user', newUser.email);
+        alert('Cuenta creada exitosamente. Redirigiendo...');
+
+        // Redirect to dashboard
+        window.location.replace('index.html');
+      }
+    }
+
+    // Auto redirect if already logged in
+    if (localStorage.getItem('current_user')) {
+      window.location.replace('index.html');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+node_modules
+dist
+.cache
+.env
+.env.docker
+chroma_db
+ollama_data
+uploads
+audit_logs
+.git
+*.log
+README.md

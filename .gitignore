@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+uploads/
+chroma_db/
+audit_logs/
+whitelist.json
+ollama_data/
+.cache/
+*.log
