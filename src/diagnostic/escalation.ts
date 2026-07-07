@@ -362,9 +362,8 @@ function mapPriorityToServiceNowImpact(priority: TicketPriority): string {
   return priority === "P0" ? "1" : priority === "P1" ? "2" : "3";
 }
 
-async function sendToWebhook(ticket: IncidentTicket): Promise<void> {
-  if (!config.escalation.webhookUrl) return;
 
+async function sendToWebhook(ticket: IncidentTicket): Promise<void> {
   const payload = {
     ticketId: ticket.id,
     severity: ticket.severity,
@@ -381,6 +380,26 @@ async function sendToWebhook(ticket: IncidentTicket): Promise<void> {
     updatedAt: ticket.updatedAt || ticket.createdAt,
   };
 
+  const prefix = config.escalation.webhookType === "jira" 
+    ? "JIRA-" 
+    : config.escalation.webhookType === "servicenow" 
+    ? "INC00" 
+    : "EXT-";
+  
+  const mockId = `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
+
+  if (!config.escalation.webhookUrl) {
+    ticket.remoteId = mockId;
+    ticket.statusHistory.push({
+      timestamp: new Date().toISOString(),
+      status: ticket.status,
+      assignee: ticket.assignedTo,
+      team: ticket.assignedTeam,
+      note: `[Simulador ITSM ${config.escalation.webhookType.toUpperCase()}] Ticket registrado automáticamente. ID Remoto: ${mockId}`,
+    });
+    return;
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -389,13 +408,42 @@ async function sendToWebhook(ticket: IncidentTicket): Promise<void> {
   }
 
   try {
-    await fetch(config.escalation.webhookUrl, {
+    const res = await fetch(config.escalation.webhookUrl, {
       method: "POST",
       headers,
       body: JSON.stringify(buildWebhookBody(payload)),
     });
-  } catch {
-    // no-op: no queremos bloquear el diagnóstico en caso de fallo del webhook
+    
+    if (res.ok) {
+      const resBody = await res.json().catch(() => ({}));
+      const remoteId = resBody.key || resBody.number || resBody.sys_id || resBody.id || mockId;
+      ticket.remoteId = String(remoteId);
+      ticket.statusHistory.push({
+        timestamp: new Date().toISOString(),
+        status: ticket.status,
+        assignee: ticket.assignedTo,
+        team: ticket.assignedTeam,
+        note: `[API REST ${config.escalation.webhookType.toUpperCase()}] Confirmación externa recibida. ID Remoto: ${remoteId}`,
+      });
+    } else {
+      ticket.remoteId = mockId;
+      ticket.statusHistory.push({
+        timestamp: new Date().toISOString(),
+        status: ticket.status,
+        assignee: ticket.assignedTo,
+        team: ticket.assignedTeam,
+        note: `[API REST ${config.escalation.webhookType.toUpperCase()}] Webhook falló (Status ${res.status}). Simulación activada, ID asignado: ${mockId}`,
+      });
+    }
+  } catch (err: any) {
+    ticket.remoteId = mockId;
+    ticket.statusHistory.push({
+      timestamp: new Date().toISOString(),
+      status: ticket.status,
+      assignee: ticket.assignedTo,
+      team: ticket.assignedTeam,
+      note: `[API REST ${config.escalation.webhookType.toUpperCase()}] Error de red (${err.message}). Simulación activada, ID asignado: ${mockId}`,
+    });
   }
 }
 
@@ -435,9 +483,9 @@ export async function createTicket(
     ],
   };
 
+  await sendToWebhook(ticket);
   ensureTicketsDir();
   writeFileSync(TICKETS_FILE, JSON.stringify(ticket) + "\n", { flag: "a" });
-  await sendToWebhook(ticket);
   return ticket;
 }
 

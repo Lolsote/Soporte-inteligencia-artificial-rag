@@ -71,7 +71,7 @@ async function executeDocker(shellCmd: string, timeout: number): Promise<ExecRes
   try {
     const dockerCmd = [
       "docker", "run", "--rm",
-      "--network", "none",
+      "--network", "bridge",
       "--cap-drop", "ALL",
       "--cap-add", "NET_RAW",
       "--security-opt", "no-new-privileges:true",

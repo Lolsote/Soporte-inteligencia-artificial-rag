@@ -200,6 +200,7 @@ export interface IncidentTicket {
   statusHistory: TicketStatusHistoryEntry[];
   updatedAt?: string;
   source?: "auto" | "manual";
+  remoteId?: string;
 }
 
 export interface RateLimitConfig {

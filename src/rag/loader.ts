@@ -9,6 +9,17 @@ const EXTENSION_MAP: Record<string, string> = {
   ".html": "html",
   ".htm": "html",
   ".pdf": "pdf",
+  ".conf": "configuracion",
+  ".json": "json",
+  ".yaml": "yaml",
+  ".yml": "yaml",
+  ".ini": "configuracion",
+  ".env": "configuracion",
+  ".sh": "script",
+  ".bash": "script",
+  ".js": "codigo",
+  ".ts": "codigo",
+  ".py": "codigo",
 };
 
 export function scanDocsDirectory(dir: string, recursive = false): string[] {
