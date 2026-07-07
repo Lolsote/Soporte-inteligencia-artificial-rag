@@ -52,24 +52,22 @@ export class MockEmbeddings extends Embeddings {
 let instance: Embeddings | null = null;
 
 /**
- * Resolves the embedding model. Falls back to MockEmbeddings if Ollama
- * or the specified embedding model is not available.
+ * Resolves the embedding model dynamically. Falls back to MockEmbeddings if Ollama
+ * or the specified embedding model is not available, allowing seamless transition when Ollama comes online.
  */
 export async function getEmbeddings(): Promise<Embeddings> {
-  if (!instance) {
-    const available = await isModelAvailable(config.ollama.embeddingModel);
-    if (available) {
+  const available = await isModelAvailable(config.ollama.embeddingModel);
+  if (available) {
+    if (!(instance instanceof OllamaEmbeddings)) {
       instance = new OllamaEmbeddings({
         baseUrl: config.ollama.baseUrl,
         model: config.ollama.embeddingModel,
       });
-    } else {
-      console.warn(
-        `\n[SoporteIA] ⚠️  Ollama o el modelo de embeddings '${config.ollama.embeddingModel}' no están disponibles.`
-      );
-      console.warn(`[SoporteIA] Usando MockEmbeddings locales (Modo Demostración Offline)\n`);
-      instance = new MockEmbeddings();
     }
+    return instance;
   }
-  return instance;
+  
+  // Si está offline, retornamos MockEmbeddings pero NO lo guardamos en la cache global
+  // para permitir la reconexión dinámica.
+  return new MockEmbeddings();
 }

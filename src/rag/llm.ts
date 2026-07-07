@@ -95,26 +95,24 @@ Puedes usar este fragmento como referencia mientras activas Ollama para obtener 
 let instance: BaseChatModel | null = null;
 
 /**
- * Resolves the LLM chat model. Falls back to MockChatModel if Ollama
- * or the specified model is not available.
+ * Resolves the LLM chat model dynamically. Falls back to MockChatModel if Ollama
+ * or the specified model is not available, allowing seamless transition when Ollama comes online.
  */
 export async function getLLM(): Promise<BaseChatModel> {
-  if (!instance) {
-    const available = await isModelAvailable(config.ollama.llmModel);
-    if (available) {
+  const available = await isModelAvailable(config.ollama.llmModel);
+  if (available) {
+    if (!(instance instanceof ChatOllama)) {
       instance = new ChatOllama({
         baseUrl: config.ollama.baseUrl,
         model: config.ollama.llmModel,
         temperature: 0.1,
         numPredict: 2048,
       });
-    } else {
-      console.warn(
-        `[SoporteIA] ⚠️  Ollama o el modelo LLM '${config.ollama.llmModel}' no están disponibles.`
-      );
-      console.warn(`[SoporteIA] Usando MockChatModel local (Modo Demostración Offline)\n`);
-      instance = new MockChatModel({});
     }
+    return instance;
   }
-  return instance;
+  
+  // Si está offline, retornamos el MockChatModel pero NO lo guardamos en la cache global
+  // para reintentar cuando Ollama vuelva a estar disponible.
+  return new MockChatModel({});
 }
