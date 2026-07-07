@@ -13,7 +13,7 @@ services:
       - key: CHROMA_URL
         value: http://chromadb-service:8000
       - key: OLLAMA_BASE_URL
-        value: http://localhost:11434 # Fallback offline integrado
+        value: http://ollama-service:11434
 
   # Servicio Privado para la base de datos vectorial ChromaDB
   - type: pserv
@@ -28,3 +28,11 @@ services:
         value: /chroma/chroma
       - key: ANONYMIZED_TELEMETRY
         value: "FALSE"
+
+  # Servicio Privado para Ollama (¡Atención: Requiere plan de pago con alta RAM en Render!)
+  - type: pserv
+    name: ollama-service
+    runtime: image
+    image:
+      url: docker.io/ollama/ollama:latest
+

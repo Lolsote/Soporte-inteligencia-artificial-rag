@@ -317,7 +317,7 @@
   <div class="container">
     <!-- Back to Index Button -->
     <div class="nav-btn-container">
-      <a href="soporteia/public/login.html" class="back-btn" id="btn-goto-index">
+      <a href="login.html" class="back-btn" id="btn-goto-index">
         <span style="font-size: 1.1rem;">📊</span> Centro de Control
       </a>
     </div>
@@ -552,7 +552,7 @@
     <div class="cta-box">
       <h3>¿Listo para automatizar tu soporte técnico?</h3>
       <p>Fase 1 · RAG Local — Fase 2 · Diagnóstico Remoto — Fase 3 · Escalamiento Híbrido — Fase 4 · Escalabilidad</p>
-      <a href="soporteia/public/login.html" class="cta-btn" id="btn-goto-index-bottom" style="text-decoration: none; display: inline-block;">SoporteIA · Roadmap Completo</a>
+      <a href="login.html" class="cta-btn" id="btn-goto-index-bottom" style="text-decoration: none; display: inline-block;">SoporteIA · Roadmap Completo</a>
     </div>
 
   </div>
@@ -563,11 +563,10 @@
     
     [btn, btnBottom].forEach(b => {
       if (b) {
-        const isLocalExpress = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.pathname === '/soporteia-maqueta.html';
-        if (window.location.protocol.startsWith('http') && isLocalExpress) {
-          b.href = '/login.html';
+        if (window.location.protocol.startsWith('http')) {
+          b.href = 'login.html';
         } else {
-          // file:// or generic live server (like port 5500)
+          // file:// or local file explorer
           b.href = 'soporteia/public/login.html';
         }
       }
