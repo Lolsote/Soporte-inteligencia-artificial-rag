@@ -78,9 +78,15 @@ function getApiBaseUrl() {
 
   const currentOrigin = window.location.origin;
   const isFileOrigin = !currentOrigin || currentOrigin === 'null' || currentOrigin.startsWith('file://');
-  const isApiOrigin = currentOrigin.includes('localhost:3000') || currentOrigin.includes('127.0.0.1:3000');
+  
+  if (isFileOrigin) {
+    return fallbackBase;
+  }
 
-  if (isFileOrigin || !isApiOrigin) {
+  // Si estamos en localhost pero en un puerto distinto al del backend (ej. puerto de desarrollo frontend)
+  const isLocalhost = currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1');
+  const isBackendPort = currentOrigin.includes(':3000');
+  if (isLocalhost && !isBackendPort) {
     return fallbackBase;
   }
 
