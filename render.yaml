@@ -18,6 +18,7 @@ services:
   # Servicio Privado para la base de datos vectorial ChromaDB
   - type: pserv
     name: chromadb-service
+    runtime: image
     image:
       url: docker.io/chromadb/chroma:latest
     envVars:
