@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { config } from "./config.js";
 import routes from "./api/routes.js";
+import { ingest } from "./rag/ingestion.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,11 +21,21 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/soporteia-maqueta.html", (_req, res) => {
-  res.sendFile(path.resolve(__dirname, "../../soporteia-maqueta.html"));
+  res.sendFile(path.resolve(__dirname, "../public/soporteia-maqueta.html"));
 });
 
 app.listen(config.server.port, () => {
   console.log(`\n  SoporteIA corriendo en http://localhost:${config.server.port}`);
+  
+  // Auto-ingest documents on startup to populate in-memory Vector Store
+  console.log("[SoporteIA] Cargando base de conocimiento local...");
+  ingest("./docs", { clear: true })
+    .then((result) => {
+      console.log(`[SoporteIA] Base de conocimiento cargada con éxito: ${result.processedFiles?.length || 0} archivos indexados.`);
+    })
+    .catch((err) => {
+      console.error("[SoporteIA] Error cargando base de conocimiento al inicio:", err);
+    });
   console.log(`\n  ── RAG ──────────────────────────────────`);
   console.log(`  GET  /api/rag/health            Health check`);
   console.log(`  GET  /api/rag/stats             Estadísticas del motor RAG`);
