@@ -31,7 +31,7 @@ app.listen(config.server.port, () => {
   console.log("[SoporteIA] Cargando base de conocimiento local...");
   ingest("./docs", { clear: true })
     .then((result) => {
-      console.log(`[SoporteIA] Base de conocimiento cargada con éxito: ${result.processedFiles?.length || 0} archivos indexados.`);
+      console.log(`[SoporteIA] Base de conocimiento cargada con éxito: ${result.documentsLoaded} documentos (${result.sources.length} fuentes) indexados.`);
     })
     .catch((err) => {
       console.error("[SoporteIA] Error cargando base de conocimiento al inicio:", err);
