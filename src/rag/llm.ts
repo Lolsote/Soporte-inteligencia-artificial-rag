@@ -102,7 +102,7 @@ export class GeminiChatModel extends SimpleChatModel {
   constructor(fields: { apiKey: string; modelName?: string }) {
     super({});
     this.apiKey = fields.apiKey;
-    this.modelName = fields.modelName || "gemini-2.5-flash";
+    this.modelName = fields.modelName || "gemini-3.5-flash";
   }
 
   _llmType() {
