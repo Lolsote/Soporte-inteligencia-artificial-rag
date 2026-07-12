@@ -489,6 +489,62 @@ export async function createTicket(
   return ticket;
 }
 
+export async function createTicketFromChat(
+  sessionId: string,
+  userQuestion: string,
+  category: IncidentCategory,
+  severity: IncidentSeverity = "high",
+  priority: TicketPriority = "P1"
+): Promise<IncidentTicket> {
+  const ticketId = generateId();
+  
+  const structuredSummary: StructuredIncidentSummary = {
+    impact: category === "security" 
+      ? "Vulnerabilidad o incidente de seguridad potencial que afecta los activos de red de la empresa."
+      : "Fallo en el despliegue de código o ciclo de vida de la aplicación que compromete la estabilidad de producción.",
+    evidence: `Reportado por usuario en sesión: ${userQuestion}`,
+    recommendedAction: category === "security"
+      ? "Revisar logs de seguridad del cortafuegos, verificar accesos no autorizados e implementar mitigaciones de red."
+      : "Revisar logs de compilación/despliegue en CI/CD, realizar rollback al commit estable anterior si es necesario.",
+    rationale: "Ticket generado de forma automática mediante análisis del asistente de RAG."
+  };
+
+  const ticket: IncidentTicket = {
+    id: ticketId,
+    createdAt: new Date().toISOString(),
+    severity,
+    status: "opened",
+    assignedTo: ASSIGNMENT_BY_SEVERITY[severity],
+    assignedTeam: TEAM_BY_CATEGORY[category],
+    incidentCategory: category,
+    priority,
+    slaTarget: computeSlaTarget(priority),
+    summary: `Incidente reportado en chat: ${userQuestion.slice(0, 100)}...`,
+    structuredSummary,
+    details: JSON.stringify({
+      sessionId,
+      userQuestion,
+      source: "chat_escalation"
+    }, null, 2),
+    updatedAt: new Date().toISOString(),
+    source: "chat",
+    statusHistory: [
+      {
+        timestamp: new Date().toISOString(),
+        status: "opened",
+        assignee: ASSIGNMENT_BY_SEVERITY[severity],
+        team: TEAM_BY_CATEGORY[category],
+        note: "Ticket generado automáticamente por escalamiento híbrido inteligente desde el chat",
+      },
+    ],
+  };
+
+  await sendToWebhook(ticket);
+  ensureTicketsDir();
+  writeFileSync(TICKETS_FILE, JSON.stringify(ticket) + "\n", { flag: "a" });
+  return ticket;
+}
+
 export function readTickets(limit = 50, offset = 0): IncidentTicket[] {
   if (!existsSync(TICKETS_FILE)) return [];
 

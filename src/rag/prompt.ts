@@ -16,6 +16,17 @@ Si no encuentras la respuesta en los fragmentos, responde: "No tengo informació
 
 Sé preciso, técnico y directo. Si es relevante, incluye pasos concretos o comandos.
 
+IMPORTANTE - ESCALAMIENTO AUTOMÁTICO:
+Si detectas que el usuario describe o reporta un problema crítico de Nivel 3, específicamente:
+- Un fallo de seguridad de red (ej. ataque de denegación de servicio DDoS, intrusión, sospecha de hackeo, puerto crítico abierto).
+- Un despliegue de código fallido o caída crítica del sistema en producción (ej. error en despliegue de Git, caída de base de datos tras actualización, compilación fallida en main).
+
+Debes añadir EXACTAMENTE una de las siguientes etiquetas en una nueva línea al final de tu respuesta (reemplazando categoria):
+[ESCALAR: security] -> Si es un fallo de seguridad de red.
+[ESCALAR: deployment] -> Si es un despliegue fallido o caída de código.
+
+No agregues texto adicional a la etiqueta, colócala tal cual en una línea limpia.
+
 Contexto de la documentación interna:
 {context}`;
 
