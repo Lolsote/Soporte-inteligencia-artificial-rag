@@ -529,6 +529,10 @@ if (queryForm) {
 
     // 4. Update thinking bubble with real response
     if (data) {
+      if (data.error) {
+        thinkingBubble.innerHTML = `<div style="color: #ff6b6b; padding: 8px; border-left: 3px solid #ff6b6b; background: rgba(255,107,107,0.1); border-radius: 4px; margin-bottom: 8px;">⚠️ <strong>Error del servidor:</strong> ${data.error}</div>`;
+        return;
+      }
       let sourcesHtml = '';
       if (data.sources && data.sources.length > 0) {
         sourcesHtml = `
