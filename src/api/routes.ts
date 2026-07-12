@@ -53,8 +53,8 @@ router.get("/rag/stats", async (_req: Request, res: Response) => {
     collectionSize: size,
     docsDirectory: "./docs",
     supportedExtensions: getSupportedExtensions(),
-    embeddingModel: config.gemini.apiKey ? "text-embedding-004 (Gemini Cloud)" : config.ollama.embeddingModel,
-    llmModel: config.gemini.apiKey ? "gemini-1.5-flash (Gemini Cloud)" : config.ollama.llmModel,
+    embeddingModel: config.gemini.apiKey ? "gemini-embedding-2 (Gemini Cloud)" : config.ollama.embeddingModel,
+    llmModel: config.gemini.apiKey ? "gemini-2.5-flash (Gemini Cloud)" : config.ollama.llmModel,
   });
 });
 

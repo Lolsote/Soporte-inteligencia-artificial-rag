@@ -13,7 +13,7 @@ export class GeminiEmbeddings extends Embeddings {
   constructor(fields: { apiKey: string; modelName?: string }) {
     super({});
     this.apiKey = fields.apiKey;
-    this.modelName = fields.modelName || "text-embedding-004";
+    this.modelName = fields.modelName || "gemini-embedding-2";
   }
 
   async embedDocuments(documents: string[]): Promise<number[][]> {
