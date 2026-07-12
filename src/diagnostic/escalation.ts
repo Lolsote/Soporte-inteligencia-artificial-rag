@@ -527,7 +527,7 @@ export async function createTicketFromChat(
       source: "chat_escalation"
     }, null, 2),
     updatedAt: new Date().toISOString(),
-    source: "chat",
+    source: "auto",
     statusHistory: [
       {
         timestamp: new Date().toISOString(),
