@@ -25,6 +25,9 @@ function normalizeBaseUrl(rawUrl?: string): string {
 }
 
 export const config = {
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || "",
+  },
   ollama: {
     baseUrl: normalizeBaseUrl(process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434"),
     embeddingModel: process.env.OLLAMA_EMBEDDING_MODEL || "nomic-embed-text",

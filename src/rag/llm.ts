@@ -92,6 +92,74 @@ Puedes usar este fragmento como referencia mientras activas Ollama para obtener 
   }
 }
 
+/**
+ * A Chat Model that connects to the Google Gemini API.
+ */
+export class GeminiChatModel extends SimpleChatModel {
+  private apiKey: string;
+  private modelName: string;
+
+  constructor(fields: { apiKey: string; modelName?: string }) {
+    super({});
+    this.apiKey = fields.apiKey;
+    this.modelName = fields.modelName || "gemini-1.5-flash";
+  }
+
+  _llmType() {
+    return "gemini-chat-model";
+  }
+
+  async _call(
+    messages: BaseMessage[],
+    _options: this["ParsedCallOptions"],
+    _runManager?: CallbackManagerForLLMRun
+  ): Promise<string> {
+    const systemMessage = messages.find(msg => msg._getType() === "system");
+    const systemInstruction = systemMessage 
+      ? { parts: [{ text: String(systemMessage.content) }] } 
+      : undefined;
+
+    const userModelMessages = messages.filter(msg => msg._getType() !== "system");
+    const formattedContents = userModelMessages.map(msg => {
+      const role = msg._getType() === "ai" ? "model" : "user";
+      return {
+        role: role,
+        parts: [{ text: String(msg.content) }]
+      };
+    });
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+    
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: formattedContents,
+        systemInstruction: systemInstruction,
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 2048
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Gemini API error: ${response.status} - ${errText}`);
+    }
+
+    const data = await response.json();
+    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!candidateText) {
+      throw new Error("No text response returned from Gemini API");
+    }
+
+    return candidateText;
+  }
+}
+
 let instance: BaseChatModel | null = null;
 
 /**
@@ -99,6 +167,13 @@ let instance: BaseChatModel | null = null;
  * or the specified model is not available, allowing seamless transition when Ollama comes online.
  */
 export async function getLLM(): Promise<BaseChatModel> {
+  if (config.gemini.apiKey) {
+    if (!(instance instanceof GeminiChatModel)) {
+      instance = new GeminiChatModel({ apiKey: config.gemini.apiKey });
+    }
+    return instance;
+  }
+
   const available = await isModelAvailable(config.ollama.llmModel);
   if (available) {
     if (!(instance instanceof ChatOllama)) {

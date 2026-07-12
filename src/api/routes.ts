@@ -36,12 +36,13 @@ router.use(authenticate);
 // ── RAG ──────────────────────────────────────────────────────────
 
 router.get("/rag/health", async (_req: Request, res: Response) => {
-  const ollamaOnline = await checkOllamaServer();
+  const ollamaOnline = config.gemini.apiKey ? false : await checkOllamaServer();
   res.json({
     status: "ok",
     service: "SoporteIA",
     version: "1.0.0",
     ollama: ollamaOnline ? "online" : "offline",
+    gemini: config.gemini.apiKey ? "online" : "offline",
     vectorStore: getVectorStoreType(),
   });
 });
@@ -52,8 +53,8 @@ router.get("/rag/stats", async (_req: Request, res: Response) => {
     collectionSize: size,
     docsDirectory: "./docs",
     supportedExtensions: getSupportedExtensions(),
-    embeddingModel: config.ollama.embeddingModel,
-    llmModel: config.ollama.llmModel,
+    embeddingModel: config.gemini.apiKey ? "text-embedding-004 (Gemini Cloud)" : config.ollama.embeddingModel,
+    llmModel: config.gemini.apiKey ? "gemini-1.5-flash (Gemini Cloud)" : config.ollama.llmModel,
   });
 });
 
