@@ -8,3 +8,5 @@ whitelist.json
 ollama_data/
 .cache/
 *.log
+tickets/
+
