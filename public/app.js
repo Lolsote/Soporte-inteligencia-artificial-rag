@@ -533,21 +533,7 @@ if (queryForm) {
         thinkingBubble.innerHTML = `<div style="color: #ff6b6b; padding: 8px; border-left: 3px solid #ff6b6b; background: rgba(255,107,107,0.1); border-radius: 4px; margin-bottom: 8px;">⚠️ <strong>Error del servidor:</strong> ${data.error}</div>`;
         return;
       }
-      let sourcesHtml = '';
-      if (data.sources && data.sources.length > 0) {
-        sourcesHtml = `
-          <div class="chat-sources">
-            <strong>Fuentes consultadas:</strong>
-            ${data.sources.map(src => {
-              const fileName = src.metadata?.source ? src.metadata.source.split(/[\\/]/).pop() : 'Documento';
-              const scoreText = src.score ? ` (score: ${src.score.toFixed(4)})` : '';
-              const pageText = src.metadata?.loc?.pageNumber ? ` - pág. ${src.metadata.loc.pageNumber}` : '';
-              return `<span class="source-item" title="${src.content.replace(/"/g, '&quot;')}">📄 ${fileName}${pageText}${scoreText}</span>`;
-            }).join('')}
-          </div>
-        `;
-      }
-      thinkingBubble.innerHTML = `<div>${data.answer}</div>${sourcesHtml}`;
+      thinkingBubble.innerHTML = `<div>${data.answer}</div>`;
       
       // Log chat query for admin console
       try {
