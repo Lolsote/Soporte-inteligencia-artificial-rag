@@ -874,6 +874,33 @@ function updateAdminConsole() {
       `;
     }).reverse().join('') || `<div style="text-align: center; color: var(--text-secondary); padding: 15px;">No se han registrado consultas al chat RAG todavía.</div>`;
   }
+
+  // 4. Render Incident Tickets (Level 3)
+  sendRequest('/api/diagnostic/tickets')
+    .then(data => {
+      const ticketsTbody = document.getElementById('adminTicketsListBody');
+      if (ticketsTbody && data && data.tickets) {
+        ticketsTbody.innerHTML = data.tickets.map(t => {
+          const dateStr = t.createdAt ? new Date(t.createdAt).toLocaleString() : 'n/a';
+          const severityColor = t.severity === 'critical' ? '#ff4d4d' : t.severity === 'high' ? '#ff944d' : '#ffb703';
+          const categoryName = t.incidentCategory === 'security' ? '🛡️ Seguridad' : t.incidentCategory === 'deployment' ? '🚀 Despliegue' : '🔧 Otro';
+          return `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 10px 15px; font-weight: 500; font-family: monospace; color: var(--color-warning);">#${t.id}</td>
+              <td style="padding: 10px 15px; color: var(--text-secondary);">${dateStr}</td>
+              <td style="padding: 10px 15px; font-weight: 600;">${categoryName}</td>
+              <td style="padding: 10px 15px; color: ${severityColor}; font-weight: 600; text-transform: uppercase;">${t.severity}</td>
+              <td style="padding: 10px 15px; font-weight: 600;">${t.priority}</td>
+              <td style="padding: 10px 15px; color: var(--text-secondary);">${t.assignedTeam} - ${t.assignedTo}</td>
+              <td style="padding: 10px 15px; color: var(--text-primary);" title="${t.summary}">${t.summary}</td>
+            </tr>
+          `;
+        }).join('') || `<tr><td colspan="7" style="padding: 15px; text-align: center; color: var(--text-secondary);">No se han registrado incidentes todavía.</td></tr>`;
+      }
+    })
+    .catch(err => {
+      console.error("Error fetching tickets for admin console:", err);
+    });
 }
 
 function getPremiumPriceInfo() {
