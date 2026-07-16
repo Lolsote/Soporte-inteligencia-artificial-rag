@@ -49,7 +49,6 @@ export function scanDocumentsInPaths(paths: string[]): string[] {
     try {
       files.push(...scanDocsDirectory(path, true));
     } catch {
-      // ignore missing directories
     }
   }
   return Array.from(new Set(files));

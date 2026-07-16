@@ -17,7 +17,6 @@
 
     .container { max-width: 1200px; margin: 0 auto; }
 
-    /* Header */
     .hero {
       text-align: center;
       padding: 60px 20px 50px;
@@ -54,7 +53,6 @@
       margin: 16px auto 0;
     }
 
-    /* Metrics */
     .metrics {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -85,7 +83,6 @@
       margin-top: 6px;
     }
 
-    /* Phase timeline */
     .phase-timeline {
       position: relative;
       padding-left: 40px;
@@ -207,7 +204,6 @@
       color: #64748b;
     }
 
-    /* Architecture */
     .arch-section {
       margin-top: 60px;
       padding-top: 40px;
@@ -243,7 +239,6 @@
     .arch-card h4 { font-size: 0.95rem; font-weight: 600; }
     .arch-card p { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
 
-    /* CTA */
     .cta-box {
       margin-top: 50px;
       background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08));
@@ -273,7 +268,6 @@
       color: #fff;
     }
 
-    /* Responsive */
     @media (max-width: 640px) {
       .hero h1 { font-size: 2rem; }
       .phase { padding: 20px; }
@@ -281,7 +275,6 @@
       .phase::before { left: -23px; width: 24px; height: 24px; font-size: 0.7rem; }
     }
 
-    /* Back Button Style */
     .nav-btn-container {
       display: flex;
       justify-content: flex-end;
@@ -315,21 +308,18 @@
 </head>
 <body>
   <div class="container">
-    <!-- Back to Index Button -->
     <div class="nav-btn-container">
       <a href="login.html" class="back-btn" id="btn-goto-index">
         <span style="font-size: 1.1rem;">📊</span> Centro de Control
       </a>
     </div>
 
-    <!-- Hero -->
     <div class="hero">
       <div class="hero-badge">B2B · IT Automation</div>
       <h1>SoporteIA</h1>
       <p>Agente de Inteligencia Artificial para automatizar el soporte técnico de primer y segundo nivel, liberando a tus ingenieros para que desarrollen producto.</p>
     </div>
 
-    <!-- Metrics -->
     <div class="metrics">
       <div class="metric-card">
         <div class="metric-value">~60%</div>
@@ -349,11 +339,9 @@
       </div>
     </div>
 
-    <!-- Phases -->
     <h2 style="font-size:1.5rem; font-weight:600; margin-bottom:32px;">Fases de Desarrollo</h2>
     <div class="phase-timeline">
 
-      <!-- Fase 1 -->
       <div class="phase" data-number="1">
         <div class="phase-header">
           <span class="phase-title">Fundación RAG</span>
@@ -392,7 +380,6 @@
         </div>
       </div>
 
-      <!-- Fase 2 -->
       <div class="phase" data-number="2">
         <div class="phase-header">
           <span class="phase-title">Diagnóstico Remoto</span>
@@ -431,7 +418,6 @@
         </div>
       </div>
 
-      <!-- Fase 3 -->
       <div class="phase" data-number="3">
         <div class="phase-header">
           <span class="phase-title">Escalamiento Híbrido</span>
@@ -470,7 +456,6 @@
         </div>
       </div>
 
-      <!-- Fase 4 -->
       <div class="phase" data-number="4">
         <div class="phase-header">
           <span class="phase-title">Escalabilidad & Optimización</span>
@@ -510,7 +495,6 @@
       </div>
     </div>
 
-    <!-- Architecture -->
     <div class="arch-section">
       <h2>Arquitectura del Sistema</h2>
       <p>Componentes clave que habilitan el flujo completo desde la consulta hasta la resolución.</p>
@@ -548,7 +532,6 @@
       </div>
     </div>
 
-    <!-- CTA -->
     <div class="cta-box">
       <h3>¿Listo para automatizar tu soporte técnico?</h3>
       <p>Fase 1 · RAG Local — Fase 2 · Diagnóstico Remoto — Fase 3 · Escalamiento Híbrido — Fase 4 · Escalabilidad</p>
@@ -557,7 +540,6 @@
 
   </div>
   <script>
-    // Adjust links dynamically based on environment
     const btn = document.getElementById('btn-goto-index');
     const btnBottom = document.getElementById('btn-goto-index-bottom');
     
@@ -566,7 +548,6 @@
         if (window.location.protocol.startsWith('http')) {
           b.href = 'login.html';
         } else {
-          // file:// or local file explorer
           b.href = 'soporteia/public/login.html';
         }
       }

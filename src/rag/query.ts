@@ -47,16 +47,15 @@ export async function queryRag(
     question,
   });
 
-  // Check for auto-escalation trigger in the LLM response
   const escalationRegex = /\[ESCALAR:\s*(security|deployment)\]/i;
   const match = answer.match(escalationRegex);
   if (match) {
     const category = match[1].toLowerCase() as IncidentCategory;
     try {
       const ticket = await createTicketFromChat(sessionId, question, category);
-      // Remove the tag from the final output
+
       answer = answer.replace(escalationRegex, "").trim();
-      // Append a user-facing incident summary block
+
       answer += `\n\n⚠️ **Escalamiento Híbrido Inteligente (Nivel 3):** He detectado un incidente crítico de tipo **${category === "security" ? "Seguridad de Red" : "Fallo de Despliegue"}**. He generado automáticamente el ticket de soporte **#${ticket.id}** y lo he asignado al **${ticket.assignedTeam}** (${ticket.assignedTo}) para su resolución prioritaria.`;
     } catch (err) {
       console.error("Error creating auto-escalation ticket from chat:", err);

@@ -1,5 +1,4 @@
 services:
-  # Servicio Web para la aplicación Node.js (Plan Gratuito de Render)
   - type: web
     name: soporteia-app
     runtime: docker

@@ -53,7 +53,6 @@ function trimAudit(): void {
       writeFileSync(AUDIT_FILE, lines.slice(-MAX_ENTRIES).join("\n") + "\n");
     }
   } catch {
-    // ignore
   }
 }
 

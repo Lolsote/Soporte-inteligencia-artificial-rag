@@ -1,4 +1,3 @@
-// Database Migration: auto-clear old schema once
 if (typeof window !== 'undefined' && window.localStorage) {
   if (localStorage.getItem('db_version') !== '2.1') {
     localStorage.clear();
@@ -6,7 +5,6 @@ if (typeof window !== 'undefined' && window.localStorage) {
   }
 }
 
-// Helpers to read/write/remove subscription flags bound to the logged-in user account
 function getSessionValue(key) {
   const currentUser = localStorage.getItem('current_user');
   if (!currentUser) return localStorage.getItem(key);
@@ -43,7 +41,7 @@ function removeSessionValue(key) {
   }
 }
 
-// Reset subscriptions via URL search parameter (e.g. ?reset=true)
+
 if (typeof window !== 'undefined' && window.location && window.location.search.includes('reset=true')) {
   removeSessionValue('sub_docs');
   removeSessionValue('sub_diag');
@@ -130,7 +128,7 @@ async function sendRequest(path, options = {}) {
   }
 }
 
-// ── TAB SWITCHING LOGIC ──────────────────────────────────────────
+
 const menuButtons = document.querySelectorAll('.menu-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -138,7 +136,7 @@ menuButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     const tabId = btn.getAttribute('data-tab');
     
-    // Intercept clicks on locked tabs for the simulated paywall (Admins bypass all locks)
+  
     if (tabId === 'docs-tab' || tabId === 'diag-tab') {
       const currentUser = localStorage.getItem('current_user') || '';
       const parts = currentUser.split('@');
@@ -175,7 +173,6 @@ function showConsole() {
   }
 }
 
-// ── QUIET PETITIONS FOR BACKGROUND MONITORING ──────────────────────
 async function sendRequestQuietly(path, options = {}) {
   const apiUrl = buildApiUrl(path);
   
@@ -194,7 +191,7 @@ async function sendRequestQuietly(path, options = {}) {
   }
 }
 
-// ── SYSTEM MONITORING (HEALTH CHECK) ────────────────────────────────
+
 async function updateStatusIndicators() {
   const data = await sendRequestQuietly('/api/rag/health');
   
@@ -237,7 +234,7 @@ async function updateStatusIndicators() {
   }
 }
 
-// ── VECTOR STORE STATS ─────────────────────────────────────────────
+
 async function updateStats() {
   const data = await sendRequestQuietly('/api/rag/stats');
   const statChunks = document.getElementById('stat-chunks');
@@ -247,7 +244,7 @@ async function updateStats() {
     if (statChunks) statChunks.textContent = data.collectionSize ?? 0;
     if (statModel) statModel.textContent = data.embeddingModel || 'n/a';
   } else {
-    // Fallback: estimate stats based on mockup uploads
+
     if (statChunks) {
       const mockFiles = JSON.parse(localStorage.getItem('mock_uploaded_files') || '[]');
       statChunks.textContent = mockFiles.length * 4;
@@ -256,13 +253,13 @@ async function updateStats() {
   }
 }
 
-// Initial configuration load
+
 updateStatusIndicators();
 updateStats();
 initSubscriptions();
 setInterval(updateStatusIndicators, 10000);
 
-// ── ACTIONS ROUTING ────────────────────────────────────────────────
+
 actions.forEach((button) => {
   button.addEventListener('click', async () => {
     const action = button.getAttribute('data-action');
@@ -315,7 +312,7 @@ actions.forEach((button) => {
   });
 });
 
-// ── RAG INGESTION FORMS ─────────────────────────────────────────────
+
 if (ingestForm) {
   ingestForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -419,7 +416,7 @@ if (uploadForm) {
       uploadForm.reset();
       if (fileInfoBox) fileInfoBox.style.display = 'none';
     } else if (file) {
-      // Simulation fallback for Vercel/offline testing
+
       setTimeout(() => {
         const mockFiles = JSON.parse(localStorage.getItem('mock_uploaded_files') || '[]');
         const exists = mockFiles.some(f => f.name === file.name);
@@ -472,7 +469,6 @@ if (queryForm) {
 
     if (!chatMessages || !question.trim()) return;
 
-    // Increment questions asked count and update UI counter immediately
     incrementQuestionsAsked();
     updateChatLimitCounter();
 
@@ -491,31 +487,25 @@ if (queryForm) {
     }
     chatMessages.appendChild(userBubble);
 
-    // Clear input
     if (chatInput) chatInput.value = '';
 
-    // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // 2. Add thinking bubble
     const thinkingBubble = document.createElement('div');
     thinkingBubble.className = 'chat-bubble bot';
     thinkingBubble.innerHTML = '<em>SoporteIA está formulando una respuesta basada en tus documentos...</em>';
     chatMessages.appendChild(thinkingBubble);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // 3. Send query
     const queryBody = { question, k };
     if (currentChatAttachment) {
       queryBody.attachment = currentChatAttachment;
-      // If offline/simulating, inject attachment name to customize prompt retrieval simulation
       const hasBaseUrl = localStorage.getItem('api_base_url');
       if (!hasBaseUrl) {
         queryBody.question = `${question} [Con documento adjunto: ${currentChatAttachment.name}]`;
       }
     }
 
-    // Reset attachment preview immediately after sending
     currentChatAttachment = null;
     if (chatFileInput) chatFileInput.value = '';
     const preview = document.getElementById('chatAttachmentPreview');
@@ -527,7 +517,6 @@ if (queryForm) {
       body: JSON.stringify(queryBody),
     });
 
-    // 4. Update thinking bubble with real response
     if (data) {
       if (data.error) {
         thinkingBubble.innerHTML = `<div style="color: #ff6b6b; padding: 8px; border-left: 3px solid #ff6b6b; background: rgba(255,107,107,0.1); border-radius: 4px; margin-bottom: 8px;">⚠️ <strong>Error del servidor:</strong> ${data.error}</div>`;
@@ -535,7 +524,6 @@ if (queryForm) {
       }
       thinkingBubble.innerHTML = `<div>${data.answer}</div>`;
       
-      // Log chat query for admin console
       try {
         const currentUser = localStorage.getItem('current_user') || 'anónimo';
         const logs = JSON.parse(localStorage.getItem('chat_history_db') || '[]');
@@ -571,7 +559,6 @@ if (queryForm) {
   }
 }
 
-// ── PROMPT & DIAGNOSTICS MANAGEMENT ─────────────────────────────────
 async function loadPrompt() {
   const data = await sendRequest('/api/rag/admin/prompt');
   if (data && data.template) {
@@ -684,7 +671,6 @@ if (whitelistRemoveForm) {
   });
 }
 
-// ── HELPER: LIST DOCUMENTS RENDER ──────────────────────────────────
 async function handleListDocs() {
   const data = await sendRequest('/api/rag/docs/list');
   const docListContainer = document.getElementById('docListContainer');
@@ -728,7 +714,6 @@ async function handleListDocs() {
   }
 }
 
-// ── API BASE URL CONFIGURATION FORM ────────────────────────────────
 const apiConfigForm = document.getElementById('apiConfigForm');
 const apiBaseUrlInput = document.getElementById('apiBaseUrlInput');
 
@@ -757,21 +742,18 @@ if (apiConfigForm) {
   });
 }
 
-// ── SIMULATED PAYWALL AND BILLING MANAGEMENT ────────────────────────
 let activeSelectedPlan = null;
 
 function initSubscriptions() {
   updateSidebarLocks();
   updateSubscriptionBillingStatus();
   
-  // Set current user email label in header
   const currentUserLabel = document.getElementById('currentUserLabel');
   const currentEmail = localStorage.getItem('current_user') || '';
   if (currentUserLabel) {
-    currentUserLabel.innerText = `Sesión: ${currentEmail || 'n/a'}`;
+    currentUserLabel.innerText = currentEmail || 'Sin sesión';
   }
 
-  // Admin access validation for Configuración RAG and Cuentas Vinculadas
   const parts = currentEmail.split('@');
   const isAdmin = parts.length > 1 && parts[1].toLowerCase().startsWith('teto');
 
@@ -785,7 +767,6 @@ function initSubscriptions() {
     accountsBtn.style.display = isAdmin ? 'flex' : 'none';
   }
 
-  // Handle chat attach options visibility based on Documentación subscription
   const hasDocsSub = isAdmin || getSessionValue('sub_docs') === 'true' || getSessionValue('sub_premium') === 'true';
   
   const chatAttachOptions = document.getElementById('chatAttachOptions');
@@ -817,7 +798,6 @@ function updateAdminConsole() {
 
   const users = JSON.parse(localStorage.getItem('users_db') || '[]');
   
-  // Separate admin and regular users
   const adminUsers = users.filter(u => {
     const p = u.email.split('@');
     return p.length > 1 && p[1].toLowerCase().startsWith('teto');
@@ -828,7 +808,6 @@ function updateAdminConsole() {
     return !(p.length > 1 && p[1].toLowerCase().startsWith('teto'));
   });
 
-  // 1. Render Admins list
   const adminTbody = document.getElementById('adminAccountsListBody');
   if (adminTbody) {
     adminTbody.innerHTML = adminUsers.map(u => `
@@ -840,7 +819,6 @@ function updateAdminConsole() {
     `).join('') || `<tr><td colspan="3" style="padding: 15px; text-align: center; color: var(--text-secondary);">No hay administradores registrados.</td></tr>`;
   }
 
-  // 2. Render Regular Users list
   const regularTbody = document.getElementById('regularAccountsListBody');
   if (regularTbody) {
     regularTbody.innerHTML = regularUsers.map(u => `
@@ -854,7 +832,6 @@ function updateAdminConsole() {
     `).join('') || `<tr><td colspan="5" style="padding: 15px; text-align: center; color: var(--text-secondary);">No hay usuarios convencionales registrados.</td></tr>`;
   }
 
-  // 3. Render Chat Logs
   const logs = JSON.parse(localStorage.getItem('chat_history_db') || '[]');
   const logsContainer = document.getElementById('adminChatLogsContainer');
   if (logsContainer) {
@@ -875,7 +852,6 @@ function updateAdminConsole() {
     }).reverse().join('') || `<div style="text-align: center; color: var(--text-secondary); padding: 15px;">No se han registrado consultas al chat RAG todavía.</div>`;
   }
 
-  // 4. Render Incident Tickets (Level 3)
   sendRequest('/api/diagnostic/tickets')
     .then(data => {
       const ticketsTbody = document.getElementById('adminTicketsListBody');
@@ -916,7 +892,6 @@ function getPremiumPriceInfo() {
     promoApplied = true;
     finalPrice = 9.99;
   } else {
-    // Calculate upgrade discounts based on already paid tiers
     let discount = 0;
     if (subDocs) discount += 29.99;
     if (subDiag) discount += 39.99;
@@ -973,7 +948,6 @@ function openPaywall(targetTab = null) {
   if (processingDiv) processingDiv.style.display = 'none';
   if (successDiv) successDiv.style.display = 'none';
 
-  // Hide plans that are already subscribed, keeping layout centered and balanced
   const subDocs = getSessionValue('sub_docs') === 'true';
   const subDiag = getSessionValue('sub_diag') === 'true';
 
@@ -1000,7 +974,6 @@ function openPaywall(targetTab = null) {
     }
   }
 
-  // Adjust CSS Grid columns dynamically
   const grid = document.querySelector('.pricing-grid');
   if (grid) {
     if (visibleCount === 3) {
@@ -1156,11 +1129,13 @@ function updateSidebarLocks() {
   const docsBtn = document.querySelector('.menu-btn[data-tab="docs-tab"]');
   const diagBtn = document.querySelector('.menu-btn[data-tab="diag-tab"]');
 
+  const svgLock = '<svg width="14" height="14" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="margin-left: auto;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
+  
   if (docsBtn) {
-    docsBtn.innerHTML = `📄 Documentación ${isDocsSubscribed ? '' : '🔒'}`;
+    docsBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Documentación ' + (isDocsSubscribed ? '' : svgLock);
   }
   if (diagBtn) {
-    diagBtn.innerHTML = `⚙️ Diagnósticos ${isDiagSubscribed ? '' : '🔒'}`;
+    diagBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Diagnósticos ' + (isDiagSubscribed ? '' : svgLock);
   }
 }
 
@@ -1175,20 +1150,23 @@ function updateSubscriptionBillingStatus() {
   const statusPremium = document.getElementById('sub-status-premium');
   const statusPromo = document.getElementById('sub-status-promo');
 
+  const svgCheck = '<svg width="14" height="14" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  const svgX = '<svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+
   if (statusDocs) {
-    statusDocs.innerText = subDocs ? 'Activa ✅' : 'Inactiva ❌';
+    statusDocs.innerHTML = subDocs ? 'Activa ' + svgCheck : 'Inactiva ' + svgX;
     statusDocs.style.color = subDocs ? 'var(--color-success)' : 'var(--text-secondary)';
   }
   if (statusDiag) {
-    statusDiag.innerText = subDiag ? 'Activa ✅' : 'Inactiva ❌';
+    statusDiag.innerHTML = subDiag ? 'Activa ' + svgCheck : 'Inactiva ' + svgX;
     statusDiag.style.color = subDiag ? 'var(--color-success)' : 'var(--text-secondary)';
   }
   if (statusPremium) {
-    statusPremium.innerText = subPremium ? 'Activa ✅' : 'Inactiva ❌';
+    statusPremium.innerHTML = subPremium ? 'Activa ' + svgCheck : 'Inactiva ' + svgX;
     statusPremium.style.color = subPremium ? 'var(--color-success)' : 'var(--text-secondary)';
   }
   if (statusPromo) {
-    statusPromo.innerText = promoUsed ? 'Usado ❌' : 'Disponible ($9.99) ✅';
+    statusPromo.innerHTML = promoUsed ? 'Usado ' + svgX : 'Disponible ($9.99) ' + svgCheck;
     statusPromo.style.color = promoUsed ? 'var(--text-secondary)' : 'var(--color-success)';
   }
 }
@@ -1198,7 +1176,6 @@ function logout() {
   window.location.replace('login.html');
 }
 
-// Bind to window to allow inline html onclick calls to function correctly
 window.initSubscriptions = initSubscriptions;
 window.openPaywall = openPaywall;
 window.closePaywall = closePaywall;
@@ -1209,7 +1186,6 @@ window.finishSubscriptionFlow = finishSubscriptionFlow;
 window.resetSubscriptions = resetSubscriptions;
 window.logout = logout;
 
-// ── CHAT ATTACHMENTS LOGIC ──────────────────────────────────────────
 let currentChatAttachment = null;
 
 const btnChatAttachFile = document.getElementById('btnChatAttachFile');
@@ -1237,7 +1213,6 @@ if (chatFileInput) {
       const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
       
       if (!hasPremiumSub) {
-        // Limited to .txt, .png, .jpg, .jpeg
         const allowedExtensions = ['.txt', '.png', '.jpg', '.jpeg'];
         if (!allowedExtensions.includes(ext)) {
           alert('⚠️ Tu plan actual de Documentación solo permite adjuntar archivos de texto (.txt) e imágenes (.png, .jpg). Para adjuntar cualquier tipo de archivo (como .pdf o .md), por favor actualiza al Plan Premium Todo Incluido.');
@@ -1253,7 +1228,7 @@ if (chatFileInput) {
         size: file.size
       };
       if (chatAttachmentName) {
-        chatAttachmentName.innerText = `📎 Archivo: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        chatAttachmentName.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.49"/></svg> Archivo: ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
       }
       if (chatAttachmentPreview) {
         chatAttachmentPreview.style.display = 'flex';
@@ -1321,7 +1296,6 @@ async function openSelectSavedDocModal() {
       </div>
     `).join('');
 
-    // Programmatically attach click listeners safely to avoid escape sequence issues
     container.querySelectorAll('.saved-doc-select-item').forEach(item => {
       item.addEventListener('click', () => {
         const name = item.getAttribute('data-name');
@@ -1346,7 +1320,7 @@ function selectSavedDoc(name, path) {
     path: path
   };
   if (chatAttachmentName) {
-    chatAttachmentName.innerText = `📁 Archivo Guardado: ${name}`;
+    chatAttachmentName.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Archivo Guardado: ' + name;
   }
   if (chatAttachmentPreview) {
     chatAttachmentPreview.style.display = 'flex';
@@ -1360,7 +1334,6 @@ window.openSelectSavedDocModal = openSelectSavedDocModal;
 window.closeSelectSavedDocModal = closeSelectSavedDocModal;
 window.selectSavedDoc = selectSavedDoc;
 
-// ── LIMIT CALCULATORS & COUNTERS HELPERS ────────────────────────────
 function getQuestionsAsked() {
   const currentUser = localStorage.getItem('current_user');
   if (!currentUser) return 0;
@@ -1403,10 +1376,8 @@ function getQueryLimitInfo() {
   let addedLimit = 0;
 
   if (subPremium) {
-    // Premium overrides other plans, providing exactly 5 + 100 = 105
     addedLimit = 100;
   } else {
-    // Cumulative sum of individual plans
     if (subDocs) addedLimit += 10;
     if (subDiag) addedLimit += 15;
   }
@@ -1427,7 +1398,7 @@ function updateChatLimitCounter() {
   if (!counterEl) return;
   const info = getQueryLimitInfo();
   if (info.unlimited) {
-    counterEl.innerText = 'Ilimitado 👑';
+    counterEl.innerText = 'Ilimitado ';
     counterEl.style.color = 'var(--color-primary)';
     counterEl.style.background = 'rgba(99, 102, 241, 0.15)';
     counterEl.style.borderColor = 'rgba(99, 102, 241, 0.3)';
@@ -1451,3 +1422,26 @@ function updateChatLimitCounter() {
 
 window.getQueryLimitInfo = getQueryLimitInfo;
 window.updateChatLimitCounter = updateChatLimitCounter;
+
+function toggleChatFullscreen() {
+  const chatCard = document.getElementById('chat-card');
+  const iconExpand = document.getElementById('icon-expand');
+  const iconCompress = document.getElementById('icon-compress');
+  
+  if (chatCard) {
+    chatCard.classList.toggle('chat-fullscreen');
+    
+
+    if (chatCard.classList.contains('chat-fullscreen')) {
+      iconExpand.style.display = 'none';
+      iconCompress.style.display = 'block';
+      document.body.style.overflow = 'hidden'; 
+    } else {
+      iconExpand.style.display = 'block';
+      iconCompress.style.display = 'none';
+      document.body.style.overflow = ''; 
+    }
+  }
+}
+
+window.toggleChatFullscreen = toggleChatFullscreen;

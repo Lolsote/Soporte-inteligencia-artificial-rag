@@ -3,9 +3,6 @@ import { Embeddings } from "@langchain/core/embeddings";
 import { config } from "../config.js";
 import { isModelAvailable } from "./ollama.js";
 
-/**
- * Cloud Gemini embeddings generator using Google Generative Language API.
- */
 export class GeminiEmbeddings extends Embeddings {
   private apiKey: string;
   private modelName: string;
@@ -19,7 +16,7 @@ export class GeminiEmbeddings extends Embeddings {
   async embedDocuments(documents: string[]): Promise<number[][]> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:batchEmbedContents?key=${this.apiKey}`;
     
-    // Split into chunks of maximum 100 documents per batch as recommended by Gemini API limits
+   
     const chunkSize = 100;
     const results: number[][] = [];
 
@@ -77,10 +74,6 @@ export class GeminiEmbeddings extends Embeddings {
   }
 }
 
-/**
- * A local mock embeddings generator based on term frequency.
- * Allows RAG similarity search to function offline without a neural model.
- */
 export class MockEmbeddings extends Embeddings {
   constructor() {
     super({});
@@ -98,13 +91,12 @@ export class MockEmbeddings extends Embeddings {
       let hash = 0;
       for (let j = 0; j < word.length; j++) {
         hash = (hash << 5) - hash + word.charCodeAt(j);
-        hash |= 0; // 32-bit integer conversion
+        hash |= 0; 
       }
       const idx = Math.abs(hash) % dimensions;
       vector[idx] += 1;
     }
 
-    // L2 normalization of the vector
     const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
     if (magnitude > 0) {
       for (let i = 0; i < dimensions; i++) {
@@ -125,10 +117,6 @@ export class MockEmbeddings extends Embeddings {
 
 let instance: Embeddings | null = null;
 
-/**
- * Resolves the embedding model dynamically. Falls back to MockEmbeddings if Ollama
- * or the specified embedding model is not available, allowing seamless transition when Ollama comes online.
- */
 export async function getEmbeddings(): Promise<Embeddings> {
   if (config.gemini.apiKey) {
     if (!(instance instanceof GeminiEmbeddings)) {
@@ -148,7 +136,5 @@ export async function getEmbeddings(): Promise<Embeddings> {
     return instance;
   }
   
-  // Si está offline, retornamos MockEmbeddings pero NO lo guardamos en la cache global
-  // para permitir la reconexión dinámica.
   return new MockEmbeddings();
 }

@@ -20,14 +20,13 @@ app.get("/", (_req, res) => {
   res.sendFile(path.resolve(__dirname, "../public/index.html"));
 });
 
-app.get("/soporteia-maqueta.html", (_req, res) => {
-  res.sendFile(path.resolve(__dirname, "../public/soporteia-maqueta.html"));
+app.get("/nosotros.html", (_req, res) => {
+  res.sendFile(path.resolve(__dirname, "../public/nosotros.html"));
 });
 
 app.listen(config.server.port, () => {
   console.log(`\n  SoporteIA corriendo en http://localhost:${config.server.port}`);
   
-  // Auto-ingest documents on startup to populate in-memory Vector Store
   console.log("[SoporteIA] Cargando base de conocimiento local...");
   ingest("./docs", { clear: true })
     .then((result) => {
