@@ -115,33 +115,51 @@ export class GeminiChatModel extends SimpleChatModel {
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
     
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: formattedContents,
-        systemInstruction: systemInstruction,
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 2048
+    let retries = 3;
+    let delay = 1000;
+    while (retries > 0) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: formattedContents,
+            systemInstruction: systemInstruction,
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 2048
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          if ((response.status === 503 || response.status === 429) && retries > 1) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            retries--;
+            delay *= 2;
+            continue;
+          }
+          throw new Error(`Gemini API error: ${response.status} - ${errText}`);
         }
-      })
-    });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini API error: ${response.status} - ${errText}`);
+        const data = await response.json();
+        const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!candidateText) {
+          throw new Error("No text response returned from Gemini API");
+        }
+
+        return candidateText;
+      } catch (err) {
+        if (retries === 1) throw err;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        retries--;
+        delay *= 2;
+      }
     }
-
-    const data = await response.json();
-    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!candidateText) {
-      throw new Error("No text response returned from Gemini API");
-    }
-
-    return candidateText;
+    throw new Error("Failed to contact Gemini API after multiple retries");
   }
 }
 

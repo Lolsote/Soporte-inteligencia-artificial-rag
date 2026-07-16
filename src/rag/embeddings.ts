@@ -16,7 +16,6 @@ export class GeminiEmbeddings extends Embeddings {
   async embedDocuments(documents: string[]): Promise<number[][]> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:batchEmbedContents?key=${this.apiKey}`;
     
-   
     const chunkSize = 100;
     const results: number[][] = [];
 
@@ -29,21 +28,44 @@ export class GeminiEmbeddings extends Embeddings {
         }
       }));
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ requests })
-      });
+      let retries = 3;
+      let delay = 1000;
+      let success = false;
+      while (retries > 0) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ requests })
+          });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Gemini Embeddings error: ${response.status} - ${errText}`);
+          if (!response.ok) {
+            const errText = await response.text();
+            if ((response.status === 503 || response.status === 429) && retries > 1) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              retries--;
+              delay *= 2;
+              continue;
+            }
+            throw new Error(`Gemini Embeddings error: ${response.status} - ${errText}`);
+          }
+
+          const data = await response.json();
+          results.push(...data.embeddings.map((emb: any) => emb.values));
+          success = true;
+          break;
+        } catch (err) {
+          if (retries === 1) throw err;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          retries--;
+          delay *= 2;
+        }
       }
-
-      const data = await response.json();
-      results.push(...data.embeddings.map((emb: any) => emb.values));
+      if (!success) {
+        throw new Error("Failed to generate embeddings after multiple retries");
+      }
     }
 
     return results;
@@ -51,26 +73,45 @@ export class GeminiEmbeddings extends Embeddings {
 
   async embedQuery(query: string): Promise<number[]> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:embedContent?key=${this.apiKey}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: `models/${this.modelName}`,
-        content: {
-          parts: [{ text: query }]
+    
+    let retries = 3;
+    let delay = 1000;
+    while (retries > 0) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: `models/${this.modelName}`,
+            content: {
+              parts: [{ text: query }]
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          if ((response.status === 503 || response.status === 429) && retries > 1) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            retries--;
+            delay *= 2;
+            continue;
+          }
+          throw new Error(`Gemini Embedding Query error: ${response.status} - ${errText}`);
         }
-      })
-    });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini Embedding Query error: ${response.status} - ${errText}`);
+        const data = await response.json();
+        return data.embedding.values;
+      } catch (err) {
+        if (retries === 1) throw err;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        retries--;
+        delay *= 2;
+      }
     }
-
-    const data = await response.json();
-    return data.embedding.values;
+    throw new Error("Failed to generate query embedding after multiple retries");
   }
 }
 
