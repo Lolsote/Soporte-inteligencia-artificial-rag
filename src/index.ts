@@ -24,6 +24,10 @@ app.get("/nosotros.html", (_req, res) => {
   res.sendFile(path.resolve(__dirname, "../public/nosotros.html"));
 });
 
+app.get("/login.html", (_req, res) => {
+  res.sendFile(path.resolve(__dirname, "../public/login.html"));
+});
+
 app.listen(config.server.port, () => {
   console.log(`\n  SoporteIA corriendo en http://localhost:${config.server.port}`);
   
