@@ -9,6 +9,7 @@ Este codigo se trata de una pagina que usa un soporte de ia para dar una solucio
 - El sistema usa una memoria simple por sesión para conservar contexto entre preguntas.
 - El motor de búsqueda funciona con un vector store local en memoria, sin depender de ChromaDB para la prueba inicial.
 - El backend compila y se ejecuta correctamente con Node.js.
+- Se implemento tambien un sistema de paga donde el usuario deberia pagar para obtener beneficios como: poder adjuntar archivos, aumentar el limite de preguntas, etc.
 - El usuario admin podra ver las cuentas conectadas y las preguntas generadas por la ia para sus respectivos mantenimiento
 - En el caso que el usuario tenga un problema demasiado grave, la ia dara una solucion temporal y generara un ticket para que el usuario admin lo revise y pueda dar una opinion mas profesional.
 - El prompt dentro de la inteligencia artificial esta obligada para temas de informatica, no dara ningun tipo de informacion de otros temas
