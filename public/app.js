@@ -519,7 +519,11 @@ if (queryForm) {
 
     if (data) {
       if (data.error) {
-        thinkingBubble.innerHTML = `<div style="color: #ff6b6b; padding: 8px; border-left: 3px solid #ff6b6b; background: rgba(255,107,107,0.1); border-radius: 4px; margin-bottom: 8px;">⚠️ <strong>Error del servidor:</strong> ${data.error}</div>`;
+        let cleanError = data.error;
+        if (typeof cleanError === 'string' && (cleanError.trim().startsWith("<") || cleanError.includes("<!DOCTYPE") || cleanError.includes("<html>"))) {
+          cleanError = "El servidor está temporalmente inaccesible o reiniciándose (Error 502/503). Por favor, intenta de nuevo en unos momentos.";
+        }
+        thinkingBubble.innerHTML = `<div style="color: #ff6b6b; padding: 8px; border-left: 3px solid #ff6b6b; background: rgba(255,107,107,0.1); border-radius: 4px; margin-bottom: 8px;">⚠️ <strong>Error del servidor:</strong> ${cleanError}</div>`;
         return;
       }
       thinkingBubble.innerHTML = `<div>${data.answer}</div>`;
