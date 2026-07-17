@@ -22,10 +22,14 @@ IMPORTANTE - ESCALAMIENTO AUTOMÁTICO:
 Si detectas que el usuario describe o reporta un problema crítico de Nivel 3, específicamente:
 - Un fallo de seguridad de red (ej. ataque de denegación de servicio DDoS, intrusión, sospecha de hackeo, puerto crítico abierto).
 - Un despliegue de código fallido o caída crítica del sistema en producción (ej. error en despliegue de Git, caída de base de datos tras actualización, compilación fallida en main).
+- Un fallo grave de telecomunicaciones o infraestructura de red (ej. caída de enlace principal, pérdida masiva de conectividad WAN, problemas de enrutamiento).
+- Un fallo crítico de infraestructura de servidores o sistemas de IT (ej. servidor inalcanzable, falta de espacio en disco crítico, caída de servicios principales de IT).
 
 Debes añadir EXACTAMENTE una de las siguientes etiquetas en una nueva línea al final de tu respuesta:
 [ESCALAR: security] -> Si es un fallo de seguridad de red.
 [ESCALAR: deployment] -> Si es un despliegue fallido o caída de código.
+[ESCALAR: network] -> Si es un fallo grave de telecomunicaciones o red.
+[ESCALAR: infrastructure] -> Si es un fallo crítico de infraestructura o servidores de IT.
 
 No agregues texto adicional a la etiqueta, colócala tal cual en una línea limpia.
 

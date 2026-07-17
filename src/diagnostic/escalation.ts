@@ -498,14 +498,26 @@ export async function createTicketFromChat(
 ): Promise<IncidentTicket> {
   const ticketId = generateId();
   
+  let impact = "";
+  let recommendedAction = "";
+  if (category === "security") {
+    impact = "Vulnerabilidad o incidente de seguridad potencial que afecta los activos de red de la empresa.";
+    recommendedAction = "Revisar logs de seguridad del cortafuegos, verificar accesos no autorizados e implementar mitigaciones de red.";
+  } else if (category === "deployment") {
+    impact = "Fallo en el despliegue de código o ciclo de vida de la aplicación que compromete la estabilidad de producción.";
+    recommendedAction = "Revisar logs de compilación/despliegue en CI/CD, realizar rollback al commit estable anterior si es necesario.";
+  } else if (category === "network") {
+    impact = "Caída o degradación crítica de la infraestructura de red o telecomunicaciones afectando la conectividad externa.";
+    recommendedAction = "Verificar enrutamiento, latencia de enlaces WAN, configuración de switches y enlaces principales.";
+  } else {
+    impact = "Fallo de hardware o software en la infraestructura de servidores o servicios de IT corporativos.";
+    recommendedAction = "Comprobar recursos del sistema (CPU, RAM, disco), estado de demonios de servicios de IT y reiniciar si es seguro.";
+  }
+
   const structuredSummary: StructuredIncidentSummary = {
-    impact: category === "security" 
-      ? "Vulnerabilidad o incidente de seguridad potencial que afecta los activos de red de la empresa."
-      : "Fallo en el despliegue de código o ciclo de vida de la aplicación que compromete la estabilidad de producción.",
+    impact,
     evidence: `Reportado por usuario en sesión: ${userQuestion}`,
-    recommendedAction: category === "security"
-      ? "Revisar logs de seguridad del cortafuegos, verificar accesos no autorizados e implementar mitigaciones de red."
-      : "Revisar logs de compilación/despliegue en CI/CD, realizar rollback al commit estable anterior si es necesario.",
+    recommendedAction,
     rationale: "Ticket generado de forma automática mediante análisis del asistente de RAG."
   };
 

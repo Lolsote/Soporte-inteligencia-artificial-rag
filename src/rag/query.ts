@@ -47,7 +47,7 @@ export async function queryRag(
     question,
   });
 
-  const escalationRegex = /\[ESCALAR:\s*(security|deployment)\]/i;
+  const escalationRegex = /\[ESCALAR:\s*(security|deployment|network|infrastructure|service)\]/i;
   const match = answer.match(escalationRegex);
   if (match) {
     const category = match[1].toLowerCase() as IncidentCategory;
@@ -56,7 +56,14 @@ export async function queryRag(
 
       answer = answer.replace(escalationRegex, "").trim();
 
-      answer += `\n\n⚠️ **Escalamiento Híbrido Inteligente (Nivel 3):** He detectado un incidente crítico de tipo **${category === "security" ? "Seguridad de Red" : "Fallo de Despliegue"}**. He generado automáticamente el ticket de soporte **#${ticket.id}** y lo he asignado al **${ticket.assignedTeam}** (${ticket.assignedTo}) para su resolución prioritaria.`;
+      let categoryLabel = "";
+      if (category === "security") categoryLabel = "Seguridad de Red";
+      else if (category === "deployment") categoryLabel = "Fallo de Despliegue";
+      else if (category === "network") categoryLabel = "Infraestructura de Red (Telecomunicaciones)";
+      else if (category === "infrastructure") categoryLabel = "Infraestructura General";
+      else categoryLabel = "Operaciones de Servicio (Soporte TI)";
+
+      answer += `\n\n⚠️ **Escalamiento Híbrido Inteligente (Nivel 3):** He detectado un incidente crítico de tipo **${categoryLabel}**. He generado automáticamente el ticket de soporte **#${ticket.id}** y lo he asignado al **${ticket.assignedTeam}** (${ticket.assignedTo}) para su resolución prioritaria.`;
     } catch (err) {
       console.error("Error creating auto-escalation ticket from chat:", err);
     }
