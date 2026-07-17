@@ -36,7 +36,7 @@ router.use(authenticate);
 // ── RAG ──────────────────────────────────────────────────────────
 
 router.get("/rag/health", async (_req: Request, res: Response) => {
-  const ollamaOnline = config.gemini.apiKey ? false : await checkOllamaServer();
+  const ollamaOnline = await checkOllamaServer();
   res.json({
     status: "ok",
     service: "SoporteIA",
@@ -49,12 +49,17 @@ router.get("/rag/health", async (_req: Request, res: Response) => {
 
 router.get("/rag/stats", async (_req: Request, res: Response) => {
   const size = await collectionSize();
+  const ollamaOnline = await checkOllamaServer();
   res.json({
     collectionSize: size,
     docsDirectory: "./docs",
     supportedExtensions: getSupportedExtensions(),
-    embeddingModel: config.gemini.apiKey ? "gemini-embedding-2 (Gemini Cloud)" : config.ollama.embeddingModel,
-    llmModel: config.gemini.apiKey ? "gemini-3.5-flash (Gemini Cloud)" : config.ollama.llmModel,
+    embeddingModel: ollamaOnline 
+      ? `${config.ollama.embeddingModel} (Ollama VPS)` 
+      : (config.gemini.apiKey ? "gemini-embedding-2 (Gemini Cloud)" : "Local/Mock (Offline)"),
+    llmModel: ollamaOnline 
+      ? `${config.ollama.llmModel} (Ollama VPS)` 
+      : (config.gemini.apiKey ? "gemini-3.5-flash (Gemini Cloud)" : "Local/Mock (Offline)"),
   });
 });
 

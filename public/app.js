@@ -211,7 +211,7 @@ async function updateStatusIndicators() {
       ollamaDot.className = data.ollama === 'online' ? 'status-dot online' : 'status-dot offline';
     }
     if (ollamaText) {
-      ollamaText.textContent = data.ollama === 'online' ? 'En línea' : 'Desconectado';
+      ollamaText.textContent = data.ollama === 'online' ? 'En línea' : (data.gemini === 'online' ? 'Desconectado (Gemini)' : 'Desconectado');
     }
     
     if (chromaDot) {

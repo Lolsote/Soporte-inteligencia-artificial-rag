@@ -166,13 +166,6 @@ export class GeminiChatModel extends SimpleChatModel {
 let instance: BaseChatModel | null = null;
 
 export async function getLLM(): Promise<BaseChatModel> {
-  if (config.gemini.apiKey) {
-    if (!(instance instanceof GeminiChatModel)) {
-      instance = new GeminiChatModel({ apiKey: config.gemini.apiKey });
-    }
-    return instance;
-  }
-
   const available = await isModelAvailable(config.ollama.llmModel);
   if (available) {
     if (!(instance instanceof ChatOllama)) {
@@ -185,6 +178,16 @@ export async function getLLM(): Promise<BaseChatModel> {
     }
     return instance;
   }
+
+  if (config.gemini.apiKey) {
+    if (!(instance instanceof GeminiChatModel)) {
+      instance = new GeminiChatModel({ apiKey: config.gemini.apiKey });
+    }
+    return instance;
+  }
   
-  return new MockChatModel({});
+  if (!(instance instanceof MockChatModel)) {
+    instance = new MockChatModel({});
+  }
+  return instance;
 }

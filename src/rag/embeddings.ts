@@ -159,13 +159,6 @@ export class MockEmbeddings extends Embeddings {
 let instance: Embeddings | null = null;
 
 export async function getEmbeddings(): Promise<Embeddings> {
-  if (config.gemini.apiKey) {
-    if (!(instance instanceof GeminiEmbeddings)) {
-      instance = new GeminiEmbeddings({ apiKey: config.gemini.apiKey });
-    }
-    return instance;
-  }
-
   const available = await isModelAvailable(config.ollama.embeddingModel);
   if (available) {
     if (!(instance instanceof OllamaEmbeddings)) {
@@ -176,6 +169,16 @@ export async function getEmbeddings(): Promise<Embeddings> {
     }
     return instance;
   }
+
+  if (config.gemini.apiKey) {
+    if (!(instance instanceof GeminiEmbeddings)) {
+      instance = new GeminiEmbeddings({ apiKey: config.gemini.apiKey });
+    }
+    return instance;
+  }
   
-  return new MockEmbeddings();
+  if (!(instance instanceof MockEmbeddings)) {
+    instance = new MockEmbeddings();
+  }
+  return instance;
 }
