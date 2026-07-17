@@ -1,4 +1,3 @@
-import { ChatOllama } from "@langchain/community/chat_models/ollama";
 import { SimpleChatModel } from "@langchain/core/language_models/chat_models";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { BaseMessage } from "@langchain/core/messages";
@@ -77,6 +76,88 @@ Puedes usar este fragmento como referencia mientras activas Ollama para obtener 
     }
 
     return "No tengo información suficiente en mi base de conocimiento para responder esta consulta.";
+  }
+}
+
+export class OllamaChatModel extends SimpleChatModel {
+  private baseUrl: string;
+  private modelName: string;
+
+  constructor(fields: { baseUrl: string; modelName: string }) {
+    super({});
+    this.baseUrl = fields.baseUrl;
+    this.modelName = fields.modelName;
+  }
+
+  _llmType() {
+    return "ollama-chat-model";
+  }
+
+  async _call(
+    messages: BaseMessage[],
+    _options: this["ParsedCallOptions"],
+    _runManager?: CallbackManagerForLLMRun
+  ): Promise<string> {
+    const formattedMessages = messages.map(msg => {
+      const role = msg._getType() === "system" 
+        ? "system" 
+        : msg._getType() === "ai" 
+        ? "assistant" 
+        : "user";
+      return {
+        role: role,
+        content: String(msg.content)
+      };
+    });
+
+    const url = `${this.baseUrl}/api/chat`;
+    
+    let retries = 3;
+    let delay = 1000;
+    while (retries > 0) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: this.modelName,
+            messages: formattedMessages,
+            stream: false,
+            options: {
+              temperature: 0.1,
+              num_predict: 2048
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          if ((response.status === 503 || response.status === 429) && retries > 1) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            retries--;
+            delay *= 2;
+            continue;
+          }
+          throw new Error(`Ollama API error: ${response.status} - ${errText}`);
+        }
+
+        const data = await response.json();
+        const candidateText = data.message?.content;
+        if (!candidateText) {
+          throw new Error("No text response returned from Ollama API");
+        }
+
+        return candidateText;
+      } catch (err) {
+        if (retries === 1) throw err;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        retries--;
+        delay *= 2;
+      }
+    }
+    throw new Error("Failed to contact Ollama API after multiple retries");
   }
 }
 
@@ -168,12 +249,10 @@ let instance: BaseChatModel | null = null;
 export async function getLLM(): Promise<BaseChatModel> {
   const available = await isModelAvailable(config.ollama.llmModel);
   if (available) {
-    if (!(instance instanceof ChatOllama)) {
-      instance = new ChatOllama({
+    if (!(instance instanceof OllamaChatModel)) {
+      instance = new OllamaChatModel({
         baseUrl: config.ollama.baseUrl,
-        model: config.ollama.llmModel,
-        temperature: 0.1,
-        numPredict: 2048,
+        modelName: config.ollama.llmModel,
       });
     }
     return instance;

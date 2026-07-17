@@ -1084,13 +1084,7 @@ function processPayment(event) {
 
 function finishSubscriptionFlow() {
   closePaywall();
-  if (activeSelectedPlan === 'docs' || activeSelectedPlan === 'premium') {
-    const docsBtn = document.querySelector('.menu-btn[data-tab="docs-tab"]');
-    if (docsBtn) docsBtn.click();
-  } else if (activeSelectedPlan === 'diag') {
-    const diagBtn = document.querySelector('.menu-btn[data-tab="diag-tab"]');
-    if (diagBtn) diagBtn.click();
-  }
+  location.reload();
 }
 
 function resetSubscriptions() {
