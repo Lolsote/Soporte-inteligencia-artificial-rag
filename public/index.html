@@ -287,6 +287,15 @@
             <button type="submit" class="btn btn-danger">Eliminar de Lista Blanca</button>
           </form>
         </div>
+
+        <div class="card" style="margin-top: 20px;">
+          <h2>Proveedor de IA Activo</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Cambia manualmente el proveedor de inteligencia artificial del chatbot entre Ollama y Gemini.</p>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="currentProviderLabel" style="font-weight: 600; color: var(--text-primary);">Cargando...</span>
+            <button id="toggleProviderBtn" class="btn" style="width: auto; padding: 10px 20px;">Cambiar Proveedor</button>
+          </div>
+        </div>
       </div>
 
       <div id="config-tab" class="tab-content">

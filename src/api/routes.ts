@@ -4,6 +4,7 @@ import { ingest } from "../rag/ingestion.js";
 import { queryRag } from "../rag/query.js";
 import { collectionSize, addDocuments, deleteCollection, getVectorStoreType } from "../rag/vectorstore.js";
 import { checkOllamaServer } from "../rag/ollama.js";
+import { getPreferredProvider, setPreferredProvider } from "../rag/llm.js";
 import { getConversation, getMemoryStats, clearConversation } from "../rag/memory.js";
 import { loadDocument } from "../rag/loader.js";
 import { splitDocuments } from "../rag/splitter.js";
@@ -44,7 +45,22 @@ router.get("/rag/health", async (_req: Request, res: Response) => {
     ollama: ollamaOnline ? "online" : "offline",
     gemini: config.gemini.apiKey ? "online" : "offline",
     vectorStore: getVectorStoreType(),
+    preferredProvider: getPreferredProvider(),
   });
+});
+
+router.get("/rag/provider", (_req: Request, res: Response) => {
+  res.json({ provider: getPreferredProvider() });
+});
+
+router.post("/rag/provider", (req: Request, res: Response) => {
+  const { provider } = req.body;
+  if (provider === "ollama" || provider === "gemini" || provider === null) {
+    setPreferredProvider(provider);
+    res.json({ success: true, provider: getPreferredProvider() });
+  } else {
+    res.status(400).json({ error: "Invalid provider" });
+  }
 });
 
 router.get("/rag/stats", async (_req: Request, res: Response) => {
@@ -54,11 +70,19 @@ router.get("/rag/stats", async (_req: Request, res: Response) => {
     collectionSize: size,
     docsDirectory: "./docs",
     supportedExtensions: getSupportedExtensions(),
-    embeddingModel: ollamaOnline 
-      ? `${config.ollama.embeddingModel} (Ollama VPS)` 
+    embeddingModel: (getPreferredProvider() === "ollama" && ollamaOnline)
+      ? `${config.ollama.embeddingModel} (Ollama VPS)`
+      : (getPreferredProvider() === "gemini" && config.gemini.apiKey)
+      ? "gemini-embedding-2 (Gemini Cloud)"
+      : ollamaOnline
+      ? `${config.ollama.embeddingModel} (Ollama VPS)`
       : (config.gemini.apiKey ? "gemini-embedding-2 (Gemini Cloud)" : "Local/Mock (Offline)"),
-    llmModel: ollamaOnline 
-      ? `${config.ollama.llmModel} (Ollama VPS)` 
+    llmModel: (getPreferredProvider() === "ollama" && ollamaOnline)
+      ? `${config.ollama.llmModel} (Ollama VPS)`
+      : (getPreferredProvider() === "gemini" && config.gemini.apiKey)
+      ? "gemini-3.5-flash (Gemini Cloud)"
+      : ollamaOnline
+      ? `${config.ollama.llmModel} (Ollama VPS)`
       : (config.gemini.apiKey ? "gemini-3.5-flash (Gemini Cloud)" : "Local/Mock (Offline)"),
   });
 });

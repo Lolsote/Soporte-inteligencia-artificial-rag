@@ -275,9 +275,40 @@ export class GeminiChatModel extends SimpleChatModel {
   }
 }
 
+let preferredProvider: "ollama" | "gemini" | null = null;
+
+export function getPreferredProvider(): "ollama" | "gemini" | null {
+  return preferredProvider;
+}
+
+export function setPreferredProvider(provider: "ollama" | "gemini" | null): void {
+  preferredProvider = provider;
+  instance = null;
+}
+
 let instance: BaseChatModel | null = null;
 
 export async function getLLM(): Promise<BaseChatModel> {
+  if (preferredProvider === "ollama") {
+    const available = await isModelAvailable(config.ollama.llmModel);
+    if (available) {
+      if (!(instance instanceof OllamaChatModel)) {
+        instance = new OllamaChatModel({
+          baseUrl: config.ollama.baseUrl,
+          modelName: config.ollama.llmModel,
+        });
+      }
+      return instance;
+    }
+  } else if (preferredProvider === "gemini") {
+    if (config.gemini.apiKey) {
+      if (!(instance instanceof GeminiChatModel)) {
+        instance = new GeminiChatModel({ apiKey: config.gemini.apiKey });
+      }
+      return instance;
+    }
+  }
+
   const available = await isModelAvailable(config.ollama.llmModel);
   if (available) {
     if (!(instance instanceof OllamaChatModel)) {

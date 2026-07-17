@@ -2,6 +2,7 @@ import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
 import { Embeddings } from "@langchain/core/embeddings";
 import { config } from "../config.js";
 import { isModelAvailable } from "./ollama.js";
+import { getPreferredProvider } from "./llm.js";
 
 export class GeminiEmbeddings extends Embeddings {
   private apiKey: string;
@@ -159,6 +160,27 @@ export class MockEmbeddings extends Embeddings {
 let instance: Embeddings | null = null;
 
 export async function getEmbeddings(): Promise<Embeddings> {
+  const preferred = getPreferredProvider();
+  if (preferred === "ollama") {
+    const available = await isModelAvailable(config.ollama.embeddingModel);
+    if (available) {
+      if (!(instance instanceof OllamaEmbeddings)) {
+        instance = new OllamaEmbeddings({
+          baseUrl: config.ollama.baseUrl,
+          model: config.ollama.embeddingModel,
+        });
+      }
+      return instance;
+    }
+  } else if (preferred === "gemini") {
+    if (config.gemini.apiKey) {
+      if (!(instance instanceof GeminiEmbeddings)) {
+        instance = new GeminiEmbeddings({ apiKey: config.gemini.apiKey });
+      }
+      return instance;
+    }
+  }
+
   const available = await isModelAvailable(config.ollama.embeddingModel);
   if (available) {
     if (!(instance instanceof OllamaEmbeddings)) {

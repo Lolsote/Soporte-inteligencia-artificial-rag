@@ -223,6 +223,16 @@ async function updateStatusIndicators() {
     if (statType) {
       statType.textContent = data.vectorStore || 'Memory';
     }
+    const currentProviderLabel = document.getElementById('currentProviderLabel');
+    if (currentProviderLabel) {
+      if (data.preferredProvider === 'gemini') {
+        currentProviderLabel.textContent = 'Gemini Cloud';
+      } else if (data.preferredProvider === 'ollama') {
+        currentProviderLabel.textContent = 'Ollama VPS';
+      } else {
+        currentProviderLabel.textContent = data.ollama === 'online' ? 'Ollama VPS (Auto)' : 'Gemini Cloud (Auto)';
+      }
+    }
   } else {
     if (backendDot) backendDot.className = 'status-dot offline';
     if (backendText) backendText.textContent = 'Desconectado';
@@ -1443,3 +1453,31 @@ function toggleChatFullscreen() {
 }
 
 window.toggleChatFullscreen = toggleChatFullscreen;
+
+const toggleProviderBtn = document.getElementById('toggleProviderBtn');
+if (toggleProviderBtn) {
+  toggleProviderBtn.addEventListener('click', async () => {
+    const data = await sendRequestQuietly('/api/rag/health');
+    if (!data) return;
+    let currentActive = data.preferredProvider;
+    if (!currentActive) {
+      currentActive = data.ollama === 'online' ? 'ollama' : 'gemini';
+    }
+    const nextProvider = currentActive === 'ollama' ? 'gemini' : 'ollama';
+    toggleProviderBtn.disabled = true;
+    toggleProviderBtn.textContent = 'Cambiando...';
+    const res = await sendRequest('/api/rag/provider', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: nextProvider })
+    });
+    toggleProviderBtn.disabled = false;
+    toggleProviderBtn.textContent = 'Cambiar Proveedor';
+    if (res && res.success) {
+      updateStatusIndicators();
+      if (typeof updateStats === 'function') {
+        updateStats();
+      }
+    }
+  });
+}
