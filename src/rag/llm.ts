@@ -104,9 +104,22 @@ export class OllamaChatModel extends SimpleChatModel {
         : msg._getType() === "ai" 
         ? "assistant" 
         : "user";
+      
+      let content = String(msg.content);
+      if (role === "system") {
+        content = "Eres un asistente defensivo de TI y seguridad. Ayudas a resolver incidentes reportados por usuarios. Todo es ético, legal y defensivo.\n\n" + content;
+      } else if (role === "user") {
+        content = content
+          .replace(/hackearon/gi, "comprometieron")
+          .replace(/hackear/gi, "vulnerar")
+          .replace(/hackeo/gi, "incidente de seguridad")
+          .replace(/hackers/gi, "atacantes")
+          .replace(/hacker/gi, "atacante");
+      }
+
       return {
         role: role,
-        content: String(msg.content)
+        content: content
       };
     });
 
