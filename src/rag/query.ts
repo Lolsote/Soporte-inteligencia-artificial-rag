@@ -49,12 +49,58 @@ export async function queryRag(
 
   const escalationRegex = /\[ESCALAR:\s*(security|deployment|network|infrastructure|service)\]/i;
   const match = answer.match(escalationRegex);
+  let category: IncidentCategory | null = null;
+
   if (match) {
-    const category = match[1].toLowerCase() as IncidentCategory;
+    category = match[1].toLowerCase() as IncidentCategory;
+  } else {
+    const lowerQuestion = question.toLowerCase();
+    if (
+      lowerQuestion.includes("hackea") ||
+      lowerQuestion.includes("hacker") ||
+      lowerQuestion.includes("ataque ddos") ||
+      lowerQuestion.includes("intrusion") ||
+      lowerQuestion.includes("acceso no autorizado") ||
+      lowerQuestion.includes("vuln") ||
+      lowerQuestion.includes("seguridad")
+    ) {
+      category = "security";
+    } else if (
+      lowerQuestion.includes("despliegue") ||
+      lowerQuestion.includes("error de despliegue") ||
+      lowerQuestion.includes("git push") ||
+      lowerQuestion.includes("caida de base de datos") ||
+      lowerQuestion.includes("caída de base de datos") ||
+      lowerQuestion.includes("produccion") ||
+      lowerQuestion.includes("producción")
+    ) {
+      category = "deployment";
+    } else if (
+      lowerQuestion.includes("enlace principal") ||
+      lowerQuestion.includes("conexion wan") ||
+      lowerQuestion.includes("conexión wan") ||
+      lowerQuestion.includes("enrutamiento") ||
+      lowerQuestion.includes("telecomunicaciones")
+    ) {
+      category = "network";
+    } else if (
+      lowerQuestion.includes("servidor inalcanzable") ||
+      lowerQuestion.includes("disco lleno") ||
+      lowerQuestion.includes("servidor caido") ||
+      lowerQuestion.includes("servidor caído") ||
+      lowerQuestion.includes("fallo de infraestructura")
+    ) {
+      category = "infrastructure";
+    }
+  }
+
+  if (category) {
     try {
       const ticket = await createTicketFromChat(sessionId, question, category);
 
-      answer = answer.replace(escalationRegex, "").trim();
+      if (match) {
+        answer = answer.replace(escalationRegex, "").trim();
+      }
 
       let categoryLabel = "";
       if (category === "security") categoryLabel = "Seguridad de Red";
